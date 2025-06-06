@@ -3,3 +3,7 @@
 data/raw/
 __pycache__/
 *.pyc
+data/*
+!data/README.md  # ←空でもいいのでdataフォルダをGitに認識させる
+.venv/
+.vscode/
