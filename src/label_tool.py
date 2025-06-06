@@ -1,4 +1,3 @@
-# ラベル付けツール
 import cv2
 import os
 import tkinter as tk
@@ -6,6 +5,10 @@ from tkinter import filedialog
 import ntpath
 
 # --- 設定 ---
+# 表示するウィンドウの横幅（ピクセル）。ご自身の画面に合わせて調整してください。
+# 例：ノートPCなら 960 や 1280 などが見やすいかもしれません。
+DISPLAY_WIDTH = 1280
+
 # ラベル付けした画像の保存先ディレクトリ
 OUTPUT_DIR = 'data/labeled_frames'
 # 分類するクラス（フォルダ名になります）
@@ -15,7 +18,7 @@ CLASSES = ['net_touch', 'over_net', 'normal']
 KEY_BINDINGS = {
     't': 'net_touch', # (t)ouch
     'o': 'over_net',  # (o)ver
-    'n': 'normal'      # (n)ormal / 何もなし
+    'n': 'normal'     # (n)ormal / 何もなし
 }
 # --- 設定ここまで ---
 
@@ -36,7 +39,7 @@ def select_video_file():
     ファイル選択ダイアログを開いて動画ファイルのパスを取得する関数
     """
     root = tk.Tk()
-    root.withdraw()  # 小さなウィンドウが表示されるのを防ぐ
+    root.withdraw()
     filepath = filedialog.askopenfilename(
         title="ラベル付けする動画ファイルを選択してください",
         filetypes=[("Video files", "*.mp4 *.avi *.mov"), ("All files", "*.*")]
@@ -73,36 +76,40 @@ def main():
         
         frame_count += 1
         
-        # 表示用のフレームをコピーして、情報を書き込む
-        display_frame = frame.copy()
+        # ★★★ ここからが変更点 ★★★
+        # 元のフレームのサイズを取得
+        (h, w) = frame.shape[:2]
+        # 設定した横幅に合わせて、アスペクト比を維持したまま高さを計算
+        r = DISPLAY_WIDTH / float(w)
+        dim = (DISPLAY_WIDTH, int(h * r))
+        
+        # 表示用にフレームをリサイズ
+        display_frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+        # ★★★ ここまでが変更点 ★★★
+        
+        # 表示用のフレームに情報を書き込む
         info_text = f'File: {video_filename} | Frame: {frame_count}'
         cv2.putText(display_frame, info_text, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
         
         cv2.imshow('Labeling Tool - Press key to label', display_frame)
         
-        # キー入力を待つ (0は無限待ち)
         key = cv2.waitKey(0) & 0xFF
         
-        # 'q'が押されたら終了
         if key == ord('q'):
             print("'q'が押されたため、プログラムを終了します。")
             break
-        # 's'が押されたらスキップ（次のフレームへ）
         elif key == ord('s'):
             print(f"Frame {frame_count} をスキップしました。")
             continue
         
-        # キーが登録されているか確認
         char_key = chr(key)
         if char_key in KEY_BINDINGS:
             class_name = KEY_BINDINGS[char_key]
             save_dir = os.path.join(OUTPUT_DIR, class_name)
-            
-            # ファイル名を決定 (例: my_video_frame_123.png)
             save_filename = f'{video_filename}_frame_{frame_count}.png'
             save_path = os.path.join(save_dir, save_filename)
             
-            # 元のフレームを保存 (文字が書き込まれていない方)
+            # 保存するのは、リサイズされていない元の高画質フレーム
             cv2.imwrite(save_path, frame)
             print(f"Saved: Frame {frame_count} -> {class_name} ({save_path})")
 
