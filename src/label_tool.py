@@ -76,7 +76,7 @@ def main():
         
         frame_count += 1
         
-        # ★★★ ここからが変更点 ★★★
+
         # 元のフレームのサイズを取得
         (h, w) = frame.shape[:2]
         # 設定した横幅に合わせて、アスペクト比を維持したまま高さを計算
@@ -85,7 +85,6 @@ def main():
         
         # 表示用にフレームをリサイズ
         display_frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-        # ★★★ ここまでが変更点 ★★★
         
         # 表示用のフレームに情報を書き込む
         info_text = f'File: {video_filename} | Frame: {frame_count}'
