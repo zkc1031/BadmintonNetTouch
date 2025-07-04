@@ -8,6 +8,7 @@ import os
 # データセットのパス（データを分割した後のパス）
 BASE_DATA_PATH = 'data/split_dataset'
 TRAIN_DIR = os.path.join(BASE_DATA_PATH, 'train')
+print(f"学習データのパス: {TRAIN_DIR}")
 VALIDATION_DIR = os.path.join(BASE_DATA_PATH, 'validation')
 
 # モデルのパラメータ
